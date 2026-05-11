@@ -1,10 +1,31 @@
 # Cloud Cost Decision Notebook
 
-Cloud Cost Decision Notebook is a small portfolio product for making early platform choices explicit. It turns synthetic workload profiles into a deploy recommendation across static hosting, serverless functions, background jobs, and managed databases.
+Cloud Cost Decision Notebook is a portfolio product for making early platform choices explicit. It turns synthetic workload profiles into a reviewer-ready deployment memo across static hosting, serverless functions, background jobs, and managed databases.
 
 ## Portfolio Signal
 
-This project shows practical platform judgment instead of generic cloud enthusiasm. The visible output is not a pricing calculator; it is a decision notebook that records assumptions, rejected options, likely cost band, and the next safe deploy step.
+This project shows practical platform judgment instead of generic cloud enthusiasm. The visible output is not a pricing calculator; it is an interactive decision notebook that records assumptions, rejected options, risk flags, illustrative cost bands, and the next safe Vercel step.
+
+The first viewport lets a reviewer switch between synthetic workloads and immediately see the recommended architecture, confidence, planning cost band, top rejected option, and the tradeoff that drove the decision.
+
+## Synthetic Data Boundary
+
+- All workloads, owners, evidence notes, deadlines, and risk flags are synthetic fixtures in `src/decision.ts`.
+- Cost bands are illustrative planning bands, not live vendor quotes.
+- No cloud account data, pricing API, customer data, credentials, or private workload telemetry is used.
+- The demo can remain public under `Hardik-S` because it is fixture-first and deterministic.
+
+## File Map
+
+| Path | Purpose |
+| --- | --- |
+| `app/ProfileNotebook.tsx` | Interactive client-side notebook, workload selector, decision trace, and reviewer packet UI. |
+| `app/page.tsx` | App Router page entry that renders the notebook. |
+| `app/styles.css` | Responsive visual system and first-viewport decision layout. |
+| `src/decision.ts` | Typed fixtures, recommendation rules, operational risk scoring, memo generation, and notebook summary helpers. |
+| `src/decision.test.ts` | Vitest coverage for static, serverless, background-job, managed-database, memo, and summary behavior. |
+| `docs/decision-memo.example.md` | Committed example of the generated reviewer memo for the highest-risk synthetic workload. |
+| `.github/workflows/verify.yml` | GitHub Actions gate for install, tests, typecheck, and production build. |
 
 ## Stack Rationale
 
@@ -12,28 +33,48 @@ This project shows practical platform judgment instead of generic cloud enthusia
 - TypeScript keeps the recommendation rules inspectable and testable.
 - Fixture-first data keeps the public demo free of customer data, account data, or credentials.
 - Vitest covers the rules that matter, so the portfolio claim is backed by executable evidence.
+- The build script uses webpack to avoid deep Windows worktree path issues seen in similar automation runs.
 
 ## Local Setup
 
+Requires Node.js 22 and npm.
+
 ```powershell
-npm install
-npm run test
-npm run build
+npm ci
+npm run verify
 npm run dev
+```
+
+Useful individual checks:
+
+```powershell
+npm run test
+npm run typecheck
+npm run build
 ```
 
 ## Verification
 
-- `npm run test` checks deterministic recommendation rules.
-- `npm run build` checks the production Next.js bundle.
-- The deployed page should contain `Cloud Cost Decision Notebook` and the four recommendation options.
+- `npm run test` checks deterministic recommendation, risk, memo, and summary rules.
+- `npm run typecheck` checks TypeScript with incremental output disabled.
+- `npm run build` checks the production Next.js bundle with webpack.
+- `npm run verify` runs the full local verification contract.
+- The deployed page should contain `Cloud Cost Decision Notebook`, `Selected decision`, `Avoided:`, and `Review Questions`.
+
+Last worker deployment evidence:
+
 - Production URL: https://cloud-cost-decision-notebook.vercel.app
+- Worker commit: `ba6478b44701d01050a24f84446f2c064565bb66`
+- Worker verification: `npm run test`, `npm run build`, and live HTTP check for `Cloud Cost Decision Notebook` plus `Managed Database`
+
+This fixer branch adds the interactive selector, reviewer memo layer, CI workflow, and expanded tests. Record the fixer commit and deployment evidence here after the branch is verified and deployed.
 
 ## Decision Log
 
-- Kept the first slice deterministic because the acceptance criteria require testable recommendation rules, not live cloud pricing integrations.
+- Kept the product deterministic because the acceptance criteria require testable recommendation rules, not live cloud pricing integrations.
 - Used broad cost bands instead of precise vendor prices because current pricing changes often and would create false precision without live quote APIs.
-- Surfaced rejected options on every card because the product signal is decision support, not a one-word recommendation.
+- Added visible rejected options because the product signal is decision support, not a one-word recommendation.
+- Added risk scoring and reviewer questions so the demo reads like a platform decision artifact rather than a static recommendation gallery.
 - Kept all profiles synthetic so the repository can remain public under `Hardik-S`.
 
 ## Assumption Table
@@ -45,8 +86,16 @@ npm run dev
 | High-write or long-retention workflows need managed persistence. | Auditability usually beats the cheapest initial deploy. |
 | Moderate interactive workflows can start with serverless functions. | Keeps the first architecture small while preserving an upgrade path. |
 
+## Limitations
+
+- The notebook does not call provider pricing APIs.
+- The memo output is generated from static fixtures, not editable user input.
+- Accessibility coverage is limited to semantic structure and responsive checks; no automated axe run is included yet.
+- The product does not provision infrastructure or mutate cloud accounts.
+
 ## Future Work
 
 - Add a form-based profile editor that recalculates the recommendation client-side.
-- Add a pricing-source date field if live provider pricing is introduced.
-- Add Vercel deployment metadata after production deployment.
+- Add pricing-source dates if live provider pricing is introduced.
+- Add export controls for the generated Markdown memo after the reviewer workflow is validated.
+- Add a rendered accessibility check to the verification contract.
