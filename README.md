@@ -77,7 +77,15 @@ Previous fixer deployment evidence:
 - Inspect URL: https://vercel.com/batb4016-9101s-projects/cloud-cost-decision-notebook/8Efu38W9BtGzux7zSxpqnMJmbyE8
 - Verified on 2026-05-11 America/Toronto with `npm run verify`, source-only redaction scans, built-output smoke, Vercel production build, and production HTTP smoke for `Selected decision`, `Avoided:`, `Review Questions`, and `Ops audit trail`.
 
-This fixer branch adds composite architecture support requirements, visible risk-factor rows, generated memo preview, memo artifact drift coverage, and conservative response headers. Record the final fixer commit and deployment evidence here after this branch is verified and deployed.
+Latest fixer deployment evidence:
+
+- Fixer code commit: `63c848bed4175c2d179f6b73086d7a1af957fb65`
+- Production deployment: `https://cloud-cost-decision-notebook-j3qxj4qta-batb4016-9101s-projects.vercel.app`
+- Production alias: https://cloud-cost-decision-notebook.vercel.app
+- Vercel deployment id: `dpl_7mxYTzZfXJquLh5E6FENe2S1jfpv`
+- Inspect URL: https://vercel.com/batb4016-9101s-projects/cloud-cost-decision-notebook/7mxYTzZfXJquLh5E6FENe2S1jfpv
+- GitHub Actions: Verify run `25656527433` passed on `main` for commit `63c848b`.
+- Verified on 2026-05-11 America/Toronto with `npm run verify`, source-only redaction scans, local HTTP/header smoke, Edge headless desktop/mobile screenshots, Vercel production build, Vercel inspect, and production alias HTTP/header smoke for `Risk Breakdown`, `Generated Decision Memo`, and `Supporting Requirements`.
 
 ## Decision Log
 
