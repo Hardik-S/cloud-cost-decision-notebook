@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  breakdownOperationalRisk,
   buildNotebookSummary,
   createDecisionMemo,
   fixtureProfiles,
@@ -37,6 +38,10 @@ describe("recommend", () => {
 
     expect(result.recommendation).toBe("Managed Database");
     expect(result.rejectedOptions.some((option) => option.option === "Background Job")).toBe(true);
+    expect(result.supportingRequirements).toContainEqual({
+      option: "Background Job",
+      reason: "Long-running or scheduled work still needs an observable worker path beside managed persistence."
+    });
   });
 
   it("keeps moderate interactive review work on serverless until persistence pressure is proven", () => {
@@ -54,6 +59,19 @@ describe("recommend", () => {
     expect(scores.sort((a, b) => b.score - a.score)[0]).toMatchObject({ id: "ops-audit-trail" });
   });
 
+  it("explains the risk score with stable factor rows for reviewer inspection", () => {
+    const factors = breakdownOperationalRisk(fixtureProfiles[3]);
+
+    expect(factors).toEqual([
+      { label: "Write pressure", points: 3, reason: "High write frequency increases data-loss and consistency risk." },
+      { label: "Retention horizon", points: 3, reason: "Two-year retention needs durable records and backup posture." },
+      { label: "Runtime shape", points: 0, reason: "No long-running worker is required for this workload." },
+      { label: "Traffic scale", points: 2, reason: "180,000 monthly requests requires capacity headroom." },
+      { label: "Known risk flags", points: 3, reason: "3 fixture risk flags need explicit review." }
+    ]);
+    expect(factors.reduce((total, factor) => total + factor.points, 0)).toBe(scoreOperationalRisk(fixtureProfiles[3]));
+  });
+
   it("builds reviewer-ready memos with evidence and rejected-option context", () => {
     const result = recommend(fixtureProfiles[3]);
     const memo = createDecisionMemo(fixtureProfiles[3], result);
@@ -61,7 +79,17 @@ describe("recommend", () => {
     expect(memo.headline).toContain("choose Managed Database");
     expect(memo.markdown).toContain("Cost band: $25-$100 synthetic planning band, not a live vendor quote.");
     expect(memo.markdown).toContain("Reject Static Site");
+    expect(memo.markdown).toContain("## Supporting Requirements");
     expect(memo.reviewQuestions).toHaveLength(3);
+  });
+
+  it("keeps the committed decision memo example synchronized with the generated high-risk memo", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const summary = buildNotebookSummary();
+    const expected = summary.entries.find((entry) => entry.profile.name === summary.highestRiskProfile)?.memo.markdown;
+    const committed = await readFile("docs/decision-memo.example.md", "utf8");
+
+    expect(committed.replace(/\r\n/g, "\n")).toBe(`${expected}\n`);
   });
 
   it("summarizes the notebook with the next highest-risk review action", () => {

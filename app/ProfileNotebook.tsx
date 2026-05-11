@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { buildNotebookSummary, scoreOperationalRisk } from "../src/decision";
+import { breakdownOperationalRisk, buildNotebookSummary, scoreOperationalRisk } from "../src/decision";
 
 const notebook = buildNotebookSummary();
 
@@ -26,6 +26,8 @@ export function ProfileNotebook() {
     option: selected.result.recommendation,
     reason: "No rejected option was generated for this synthetic workload."
   };
+  const supportingRequirement = selected.result.supportingRequirements[0];
+  const riskFactors = breakdownOperationalRisk(selected.profile);
 
   return (
     <main>
@@ -73,6 +75,11 @@ export function ProfileNotebook() {
           <p className="wrongAnswer">
             Avoided: <strong>{topRejected.option}</strong> because {topRejected.reason.toLowerCase()}
           </p>
+          {supportingRequirement ? (
+            <p className="supportingRequirement">
+              Companion: <strong>{supportingRequirement.option}</strong> because {supportingRequirement.reason.toLowerCase()}
+            </p>
+          ) : null}
         </aside>
       </section>
 
@@ -143,6 +150,20 @@ export function ProfileNotebook() {
 
       <section className="reviewGrid" aria-label="Decision review packet">
         <article>
+          <h2>Risk Breakdown</h2>
+          <ul className="factorList">
+            {riskFactors.map((factor) => (
+              <li key={factor.label}>
+                <span>
+                  <strong>{factor.label}</strong>
+                  {factor.reason}
+                </span>
+                <b>{factor.points}</b>
+              </li>
+            ))}
+          </ul>
+        </article>
+        <article>
           <h2>Review Questions</h2>
           <ol>
             {selected.memo.reviewQuestions.map((question) => (
@@ -169,6 +190,18 @@ export function ProfileNotebook() {
           </ul>
           <p className="riskScore">Risk score: {scoreOperationalRisk(selected.profile)}</p>
         </article>
+      </section>
+
+      <section className="memoPanel" aria-label="Generated decision memo">
+        <div>
+          <p className="type">Copy-safe artifact</p>
+          <h2>Generated Decision Memo</h2>
+          <p>
+            This is the deterministic Markdown packet mirrored in `docs/decision-memo.example.md` for the highest-risk
+            fixture.
+          </p>
+        </div>
+        <pre tabIndex={0}>{selected.memo.markdown}</pre>
       </section>
 
       <section className="grid" aria-label="All workload recommendations">

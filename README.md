@@ -6,7 +6,7 @@ Cloud Cost Decision Notebook is a portfolio product for making early platform ch
 
 This project shows practical platform judgment instead of generic cloud enthusiasm. The visible output is not a pricing calculator; it is an interactive decision notebook that records assumptions, rejected options, risk flags, illustrative cost bands, and the next safe Vercel step.
 
-The first viewport lets a reviewer switch between synthetic workloads and immediately see the recommended architecture, confidence, planning cost band, top rejected option, and the tradeoff that drove the decision.
+The first viewport lets a reviewer switch between synthetic workloads and immediately see the recommended architecture, confidence, planning cost band, top rejected option, companion architecture requirement, and the tradeoff that drove the decision.
 
 ## Synthetic Data Boundary
 
@@ -22,7 +22,7 @@ The first viewport lets a reviewer switch between synthetic workloads and immedi
 | `app/ProfileNotebook.tsx` | Interactive client-side notebook, workload selector, decision trace, and reviewer packet UI. |
 | `app/page.tsx` | App Router page entry that renders the notebook. |
 | `app/styles.css` | Responsive visual system and first-viewport decision layout. |
-| `src/decision.ts` | Typed fixtures, recommendation rules, operational risk scoring, memo generation, and notebook summary helpers. |
+| `src/decision.ts` | Typed fixtures, recommendation rules, composite support requirements, operational risk scoring, memo generation, and notebook summary helpers. |
 | `src/decision.test.ts` | Vitest coverage for static, serverless, background-job, managed-database, memo, and summary behavior. |
 | `docs/decision-memo.example.md` | Committed example of the generated reviewer memo for the highest-risk synthetic workload. |
 | `.github/workflows/verify.yml` | GitHub Actions gate for install, tests, typecheck, and production build. |
@@ -59,7 +59,8 @@ npm run build
 - `npm run typecheck` checks TypeScript with incremental output disabled.
 - `npm run build` checks the production Next.js bundle with webpack.
 - `npm run verify` runs the full local verification contract.
-- The deployed page should contain `Cloud Cost Decision Notebook`, `Selected decision`, `Avoided:`, and `Review Questions`.
+- The deployed page should contain `Cloud Cost Decision Notebook`, `Selected decision`, `Avoided:`, `Risk Breakdown`, and `Generated Decision Memo`.
+- `src/decision.test.ts` compares `docs/decision-memo.example.md` against the generated highest-risk memo so the committed artifact cannot drift silently.
 
 Last worker deployment evidence:
 
@@ -67,7 +68,7 @@ Last worker deployment evidence:
 - Worker commit: `ba6478b44701d01050a24f84446f2c064565bb66`
 - Worker verification: `npm run test`, `npm run build`, and live HTTP check for `Cloud Cost Decision Notebook` plus `Managed Database`
 
-Fixer deployment evidence:
+Previous fixer deployment evidence:
 
 - Fixer commit: `f9442193c51a72d7a003c9603c75afbb98040aa5`
 - Production deployment: `https://cloud-cost-decision-notebook-79wg9lh78-batb4016-9101s-projects.vercel.app`
@@ -76,12 +77,16 @@ Fixer deployment evidence:
 - Inspect URL: https://vercel.com/batb4016-9101s-projects/cloud-cost-decision-notebook/8Efu38W9BtGzux7zSxpqnMJmbyE8
 - Verified on 2026-05-11 America/Toronto with `npm run verify`, source-only redaction scans, built-output smoke, Vercel production build, and production HTTP smoke for `Selected decision`, `Avoided:`, `Review Questions`, and `Ops audit trail`.
 
+This fixer branch adds composite architecture support requirements, visible risk-factor rows, generated memo preview, memo artifact drift coverage, and conservative response headers. Record the final fixer commit and deployment evidence here after this branch is verified and deployed.
+
 ## Decision Log
 
 - Kept the product deterministic because the acceptance criteria require testable recommendation rules, not live cloud pricing integrations.
 - Used broad cost bands instead of precise vendor prices because current pricing changes often and would create false precision without live quote APIs.
 - Added visible rejected options because the product signal is decision support, not a one-word recommendation.
 - Added risk scoring and reviewer questions so the demo reads like a platform decision artifact rather than a static recommendation gallery.
+- Added companion architecture requirements so a persistence-first recommendation can still preserve scheduled or long-running worker needs.
+- Added conservative response headers in `next.config.ts` because this public portfolio surface should demonstrate deploy hygiene even without secrets or account data.
 - Kept all profiles synthetic so the repository can remain public under `Hardik-S`.
 
 ## Assumption Table
@@ -97,7 +102,7 @@ Fixer deployment evidence:
 
 - The notebook does not call provider pricing APIs.
 - The memo output is generated from static fixtures, not editable user input.
-- Accessibility coverage is limited to semantic structure and responsive checks; no automated axe run is included yet.
+- Accessibility coverage is limited to semantic structure, keyboard-focusable memo output, and responsive checks; no automated axe run is included yet.
 - The product does not provision infrastructure or mutate cloud accounts.
 
 ## Future Work

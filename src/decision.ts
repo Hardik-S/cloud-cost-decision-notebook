@@ -23,7 +23,14 @@ export type DecisionResult = {
   monthlyCostBand: string;
   assumptions: string[];
   rejectedOptions: Array<{ option: RecommendationKind; reason: string }>;
+  supportingRequirements: Array<{ option: RecommendationKind; reason: string }>;
   nextDeployStep: string;
+};
+
+export type RiskFactor = {
+  label: string;
+  points: number;
+  reason: string;
 };
 
 export type DecisionMemo = {
@@ -139,6 +146,7 @@ export function recommend(profile: WorkloadProfile): DecisionResult {
         { option: "Serverless Functions", reason: "Adds runtime cost without request-time logic." },
         { option: "Managed Database", reason: "No durable records are created by users." }
       ],
+      supportingRequirements: [],
       nextDeployStep: "Ship as a Vercel static-first Next.js route and keep data in versioned fixtures."
     };
   }
@@ -157,6 +165,15 @@ export function recommend(profile: WorkloadProfile): DecisionResult {
         { option: "Static Site", reason: "A static build cannot preserve the audit trail." },
         { option: "Background Job", reason: "Processing alone does not solve interactive querying." }
       ],
+      supportingRequirements:
+        profile.needsLongRunningWork || profile.kind === "scheduled"
+          ? [
+              {
+                option: "Background Job",
+                reason: "Long-running or scheduled work still needs an observable worker path beside managed persistence."
+              }
+            ]
+          : [],
       nextDeployStep: "Use Vercel for the app and attach a managed Postgres project only after the schema is explicit."
     };
   }
@@ -175,6 +192,7 @@ export function recommend(profile: WorkloadProfile): DecisionResult {
         { option: "Static Site", reason: "Cannot execute scheduled or long-running processing." },
         { option: "Serverless Functions", reason: "Request lifetimes are a poor fit for slow batch work." }
       ],
+      supportingRequirements: [],
       nextDeployStep: "Start with a scheduled worker plus a small status table, then expose results through a read-only route."
     };
   }
@@ -192,17 +210,60 @@ export function recommend(profile: WorkloadProfile): DecisionResult {
       { option: "Static Site", reason: "The workflow needs request-time decisions." },
       { option: "Managed Database", reason: "Persistence can wait until write volume or retention grows." }
     ],
+    supportingRequirements: [],
     nextDeployStep: "Implement the decision path as a Vercel serverless route and keep persistence behind an interface."
   };
 }
 
-export function scoreOperationalRisk(profile: WorkloadProfile): number {
-  const writeRisk = profile.writeFrequency === "high" ? 3 : profile.writeFrequency === "medium" ? 2 : profile.writeFrequency === "low" ? 1 : 0;
-  const retentionRisk = profile.dataRetentionDays > 365 ? 3 : profile.dataRetentionDays > 90 ? 2 : profile.dataRetentionDays > 0 ? 1 : 0;
-  const runtimeRisk = profile.needsLongRunningWork ? 2 : 0;
-  const scaleRisk = profile.monthlyRequests > 100000 ? 2 : profile.monthlyRequests > 50000 ? 1 : 0;
+export function breakdownOperationalRisk(profile: WorkloadProfile): RiskFactor[] {
+  const writePoints =
+    profile.writeFrequency === "high" ? 3 : profile.writeFrequency === "medium" ? 2 : profile.writeFrequency === "low" ? 1 : 0;
+  const retentionPoints = profile.dataRetentionDays > 365 ? 3 : profile.dataRetentionDays > 90 ? 2 : profile.dataRetentionDays > 0 ? 1 : 0;
+  const runtimePoints = profile.needsLongRunningWork ? 2 : 0;
+  const trafficPoints = profile.monthlyRequests > 100000 ? 2 : profile.monthlyRequests > 50000 ? 1 : 0;
 
-  return writeRisk + retentionRisk + runtimeRisk + scaleRisk + profile.riskFlags.length;
+  return [
+    {
+      label: "Write pressure",
+      points: writePoints,
+      reason:
+        profile.writeFrequency === "high"
+          ? "High write frequency increases data-loss and consistency risk."
+          : `${profile.writeFrequency} write frequency keeps data-loss pressure at ${writePoints} point${writePoints === 1 ? "" : "s"}.`
+    },
+    {
+      label: "Retention horizon",
+      points: retentionPoints,
+      reason:
+        profile.dataRetentionDays > 365
+          ? "Two-year retention needs durable records and backup posture."
+          : `${profile.dataRetentionDays} retention days keeps retention pressure at ${retentionPoints} point${retentionPoints === 1 ? "" : "s"}.`
+    },
+    {
+      label: "Runtime shape",
+      points: runtimePoints,
+      reason: profile.needsLongRunningWork
+        ? "Long-running work needs retries, status records, and logs outside the request path."
+        : "No long-running worker is required for this workload."
+    },
+    {
+      label: "Traffic scale",
+      points: trafficPoints,
+      reason:
+        profile.monthlyRequests > 100000
+          ? `${profile.monthlyRequests.toLocaleString()} monthly requests requires capacity headroom.`
+          : `${profile.monthlyRequests.toLocaleString()} monthly requests keeps scale pressure at ${trafficPoints} point${trafficPoints === 1 ? "" : "s"}.`
+    },
+    {
+      label: "Known risk flags",
+      points: profile.riskFlags.length,
+      reason: `${profile.riskFlags.length} fixture risk flags need explicit review.`
+    }
+  ];
+}
+
+export function scoreOperationalRisk(profile: WorkloadProfile): number {
+  return breakdownOperationalRisk(profile).reduce((total, factor) => total + factor.points, 0);
 }
 
 export function createDecisionMemo(profile: WorkloadProfile, result: DecisionResult): DecisionMemo {
@@ -225,6 +286,10 @@ export function createDecisionMemo(profile: WorkloadProfile, result: DecisionRes
   ];
 
   const rejectedLines = result.rejectedOptions.map((option) => `- Reject ${option.option}: ${option.reason}`).join("\n");
+  const supportingLines =
+    result.supportingRequirements.length > 0
+      ? result.supportingRequirements.map((item) => `- Add ${item.option}: ${item.reason}`).join("\n")
+      : "- No companion service is required for the current synthetic profile.";
   const evidenceLines = profile.evidence.map((item) => `- ${item.label}: ${item.detail}`).join("\n");
   const riskLines = profile.riskFlags.map((flag) => `- ${flag}`).join("\n");
 
@@ -250,6 +315,9 @@ export function createDecisionMemo(profile: WorkloadProfile, result: DecisionRes
       "",
       "## Rejected Options",
       rejectedLines,
+      "",
+      "## Supporting Requirements",
+      supportingLines,
       "",
       "## Risk Flags",
       riskLines,
