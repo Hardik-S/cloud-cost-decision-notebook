@@ -96,6 +96,7 @@ Latest fixer deployment evidence:
 - Added companion architecture requirements so a persistence-first recommendation can still preserve scheduled or long-running worker needs.
 - Added conservative response headers in `next.config.ts` because this public portfolio surface should demonstrate deploy hygiene even without secrets or account data.
 - Kept all profiles synthetic so the repository can remain public under `Hardik-S`.
+- Kept generated memos explicit when no risk flags exist so reviewers see an intentional no-risk finding instead of a blank section.
 
 ## Assumption Table
 

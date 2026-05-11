@@ -83,6 +83,17 @@ describe("recommend", () => {
     expect(memo.reviewQuestions).toHaveLength(3);
   });
 
+  it("keeps memos explicit when a profile has no risk flags", () => {
+    const noFlagProfile: WorkloadProfile = {
+      ...fixtureProfiles[0],
+      riskFlags: []
+    };
+    const memo = createDecisionMemo(noFlagProfile, recommend(noFlagProfile));
+
+    expect(memo.markdown).toContain("- No risk flags were identified for this synthetic profile.");
+    expect(memo.markdown).not.toContain("## Risk Flags\n\n## Next Deploy Step");
+  });
+
   it("keeps the committed decision memo example synchronized with the generated high-risk memo", async () => {
     const { readFile } = await import("node:fs/promises");
     const summary = buildNotebookSummary();
