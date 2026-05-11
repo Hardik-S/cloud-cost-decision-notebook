@@ -67,7 +67,14 @@ Last worker deployment evidence:
 - Worker commit: `ba6478b44701d01050a24f84446f2c064565bb66`
 - Worker verification: `npm run test`, `npm run build`, and live HTTP check for `Cloud Cost Decision Notebook` plus `Managed Database`
 
-This fixer branch adds the interactive selector, reviewer memo layer, CI workflow, and expanded tests. Record the fixer commit and deployment evidence here after the branch is verified and deployed.
+Fixer deployment evidence:
+
+- Fixer commit: `f9442193c51a72d7a003c9603c75afbb98040aa5`
+- Production deployment: `https://cloud-cost-decision-notebook-79wg9lh78-batb4016-9101s-projects.vercel.app`
+- Production alias: https://cloud-cost-decision-notebook.vercel.app
+- Vercel deployment id: `dpl_8Efu38W9BtGzux7zSxpqnMJmbyE8`
+- Inspect URL: https://vercel.com/batb4016-9101s-projects/cloud-cost-decision-notebook/8Efu38W9BtGzux7zSxpqnMJmbyE8
+- Verified on 2026-05-11 America/Toronto with `npm run verify`, source-only redaction scans, built-output smoke, Vercel production build, and production HTTP smoke for `Selected decision`, `Avoided:`, `Review Questions`, and `Ops audit trail`.
 
 ## Decision Log
 
