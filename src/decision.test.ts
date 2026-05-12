@@ -94,6 +94,17 @@ describe("recommend", () => {
     expect(memo.markdown).not.toContain("## Risk Flags\n\n## Next Deploy Step");
   });
 
+  it("keeps memos explicit when no rejected options are captured", () => {
+    const result = {
+      ...recommend(fixtureProfiles[1]),
+      rejectedOptions: []
+    };
+    const memo = createDecisionMemo(fixtureProfiles[1], result);
+
+    expect(memo.markdown).toContain("- No rejected options were captured for this synthetic profile.");
+    expect(memo.markdown).not.toContain("## Rejected Options\n\n## Supporting Requirements");
+  });
+
   it("keeps the committed decision memo example synchronized with the generated high-risk memo", async () => {
     const { readFile } = await import("node:fs/promises");
     const summary = buildNotebookSummary();
