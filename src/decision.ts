@@ -285,7 +285,10 @@ export function createDecisionMemo(profile: WorkloadProfile, result: DecisionRes
     `Would a failed deploy lose user data, audit history, or only the current UI build?`
   ];
 
-  const rejectedLines = result.rejectedOptions.map((option) => `- Reject ${option.option}: ${option.reason}`).join("\n");
+  const rejectedLines =
+    result.rejectedOptions.length > 0
+      ? result.rejectedOptions.map((option) => `- Reject ${option.option}: ${option.reason}`).join("\n")
+      : "- No rejected options were captured for this synthetic profile.";
   const supportingLines =
     result.supportingRequirements.length > 0
       ? result.supportingRequirements.map((item) => `- Add ${item.option}: ${item.reason}`).join("\n")

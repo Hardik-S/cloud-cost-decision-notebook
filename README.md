@@ -97,6 +97,7 @@ Latest fixer deployment evidence:
 - Added conservative response headers in `next.config.ts` because this public portfolio surface should demonstrate deploy hygiene even without secrets or account data.
 - Kept all profiles synthetic so the repository can remain public under `Hardik-S`.
 - Kept generated memos explicit when no risk flags exist so reviewers see an intentional no-risk finding instead of a blank section.
+- Kept generated memos explicit when rejected options are absent so reviewer packets never contain an empty decision-rationale section.
 
 ## Assumption Table
 
