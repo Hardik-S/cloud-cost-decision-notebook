@@ -293,7 +293,10 @@ export function createDecisionMemo(profile: WorkloadProfile, result: DecisionRes
     result.supportingRequirements.length > 0
       ? result.supportingRequirements.map((item) => `- Add ${item.option}: ${item.reason}`).join("\n")
       : "- No companion service is required for the current synthetic profile.";
-  const evidenceLines = profile.evidence.map((item) => `- ${item.label}: ${item.detail}`).join("\n");
+  const evidenceLines =
+    profile.evidence.length > 0
+      ? profile.evidence.map((item) => `- ${item.label}: ${item.detail}`).join("\n")
+      : "- No evidence rows were captured for this synthetic profile.";
   const riskLines =
     profile.riskFlags.length > 0
       ? profile.riskFlags.map((flag) => `- ${flag}`).join("\n")

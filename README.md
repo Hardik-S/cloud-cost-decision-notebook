@@ -98,6 +98,7 @@ Latest fixer deployment evidence:
 - Kept all profiles synthetic so the repository can remain public under `Hardik-S`.
 - Kept generated memos explicit when no risk flags exist so reviewers see an intentional no-risk finding instead of a blank section.
 - Kept generated memos explicit when rejected options are absent so reviewer packets never contain an empty decision-rationale section.
+- Kept generated memos explicit when evidence rows are absent so reviewer packets never imply that an empty evidence section is complete.
 
 ## Assumption Table
 
