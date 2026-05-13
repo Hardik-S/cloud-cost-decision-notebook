@@ -105,6 +105,17 @@ describe("recommend", () => {
     expect(memo.markdown).not.toContain("## Rejected Options\n\n## Supporting Requirements");
   });
 
+  it("keeps memos explicit when no evidence rows are captured", () => {
+    const noEvidenceProfile: WorkloadProfile = {
+      ...fixtureProfiles[1],
+      evidence: []
+    };
+    const memo = createDecisionMemo(noEvidenceProfile, recommend(noEvidenceProfile));
+
+    expect(memo.markdown).toContain("- No evidence rows were captured for this synthetic profile.");
+    expect(memo.markdown).not.toContain("## Evidence\n\n## Rejected Options");
+  });
+
   it("keeps the committed decision memo example synchronized with the generated high-risk memo", async () => {
     const { readFile } = await import("node:fs/promises");
     const summary = buildNotebookSummary();
