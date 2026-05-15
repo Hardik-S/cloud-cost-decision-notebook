@@ -94,6 +94,22 @@ describe("recommend", () => {
     expect(memo.markdown).not.toContain("## Risk Flags\n\n## Next Deploy Step");
   });
 
+  it("keeps risk-factor explanations explicit when no flags exist", () => {
+    const noFlagProfile: WorkloadProfile = {
+      ...fixtureProfiles[0],
+      riskFlags: []
+    };
+    const knownRiskFlags = breakdownOperationalRisk(noFlagProfile).find(
+      (factor) => factor.label === "Known risk flags"
+    );
+
+    expect(knownRiskFlags).toEqual({
+      label: "Known risk flags",
+      points: 0,
+      reason: "No fixture risk flags were identified for this synthetic profile."
+    });
+  });
+
   it("keeps memos explicit when no rejected options are captured", () => {
     const result = {
       ...recommend(fixtureProfiles[1]),

@@ -257,7 +257,10 @@ export function breakdownOperationalRisk(profile: WorkloadProfile): RiskFactor[]
     {
       label: "Known risk flags",
       points: profile.riskFlags.length,
-      reason: `${profile.riskFlags.length} fixture risk flags need explicit review.`
+      reason:
+        profile.riskFlags.length > 0
+          ? `${profile.riskFlags.length} fixture risk flags need explicit review.`
+          : "No fixture risk flags were identified for this synthetic profile."
     }
   ];
 }
