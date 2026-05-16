@@ -150,6 +150,21 @@ describe("recommend", () => {
     expect(summary.nextReviewAction).toContain("pilot expansion");
   });
 
+  it("breaks highest-risk ties toward the profile with weaker evidence support", () => {
+    const underEvidencedAudit: WorkloadProfile = {
+      ...fixtureProfiles[3],
+      id: "ops-audit-trail-unconfirmed",
+      name: "Ops audit trail without evidence",
+      evidence: []
+    };
+
+    const summary = buildNotebookSummary([fixtureProfiles[3], underEvidencedAudit]);
+
+    expect(scoreOperationalRisk(underEvidencedAudit)).toBe(scoreOperationalRisk(fixtureProfiles[3]));
+    expect(summary.highestRiskProfile).toBe("Ops audit trail without evidence");
+    expect(summary.nextReviewAction).toContain("Ops audit trail without evidence");
+  });
+
   it("returns an explicit empty summary instead of throwing on missing fixtures", () => {
     const summary = buildNotebookSummary([]);
 
