@@ -100,6 +100,7 @@ Latest fixer deployment evidence:
 - Kept generated memos explicit when rejected options are absent so reviewer packets never contain an empty decision-rationale section.
 - Kept generated memos explicit when evidence rows are absent so reviewer packets never imply that an empty evidence section is complete.
 - Kept zero-risk factor explanations explicit so the risk score never implies nonexistent flags still need review.
+- Broke highest-risk summary ties toward the lower evidence score so fixture order cannot hide a decision that needs more support.
 
 ## Assumption Table
 

@@ -354,9 +354,22 @@ export function buildNotebookSummary(profiles: WorkloadProfile[] = fixtureProfil
       nextReviewAction: "Add at least one synthetic workload profile before reviewing decisions."
     };
   }
-  const highestRiskEntry = entries.reduce((highest, entry) =>
-    scoreOperationalRisk(entry.profile) > scoreOperationalRisk(highest.profile) ? entry : highest
-  );
+  const highestRiskEntry = entries.reduce((highest, entry) => {
+    const entryRiskScore = scoreOperationalRisk(entry.profile);
+    const highestRiskScore = scoreOperationalRisk(highest.profile);
+
+    if (entryRiskScore > highestRiskScore) {
+      return entry;
+    }
+
+    // Equal risk should surface the least-supported decision first so fixture order
+    // cannot hide a profile that needs more reviewer evidence before deployment.
+    if (entryRiskScore === highestRiskScore && entry.memo.evidenceScore < highest.memo.evidenceScore) {
+      return entry;
+    }
+
+    return highest;
+  });
   const reviewDeadline = highestRiskEntry.profile.decisionDeadline.replace(/^before\s+/i, "");
 
   return {
